@@ -34,18 +34,22 @@ quantile(myImage,c(0.30,0.80))
 #question 3
 install.packages("data.table")
 library(data.table)
+
 download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FGDP.csv",method="curl",
               destfile="temp/firstFile")
-firstData<-read.csv("temp/firstFile", skip = 4, nrows = 215)
-names(firstData)
-head(firstData,2)
+
+
 download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv",
               method="curl",destfile="temp/secondFile")
-secondData<-read.csv("temp/secondFile", nrows = 218)
-names(secondData)
-head(secondData[,c(1,2,3,4)])
-str(secondData)
-namesfirs
-install.packages("dplyr")
-library(dplyr)
+
+firstData<-read.csv("temp/firstFile",
+                    skip = 4, nrows = 190)
+secondData<-read.csv("temp/secondFile", nrows = 235)
+mergedData<-merge(firstData,secondData,by.x="X",by.y = "CountryCode",all = FALSE)
+nrow(mergedData)
+resBis<-arrange(mergedData,desc(X.1))
+
+orderedMergedData<-arrange(mergedData,X.4)
+
+head(resBis[,1:6],15)
 
