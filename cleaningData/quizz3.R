@@ -54,3 +54,6 @@ orderedMergedData<-arrange(mergedData,X.4)
 head(resBis[,1:6],15)
 
 # Question 4
+
+orderedMergedData$Income.Group
+tapply(orderedMergedData$X.1,orderedMergedData$Income.Group,mean,na.rm=TRUE)
