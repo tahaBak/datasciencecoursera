@@ -53,3 +53,4 @@ orderedMergedData<-arrange(mergedData,X.4)
 
 head(resBis[,1:6],15)
 
+# Question 4
