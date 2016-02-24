@@ -97,12 +97,5 @@ points(x[g=="Female"],y[g=="Female"],col="blue")
 points(x[g=="Female"],y[g=="Female"],col="blue",pch=19)
 
 
-# integrate modes
-#false:  made for formal presentation
-#false systtem useful for conditioning plots
-#pdf file
-#svg
-#false plit may n eed to be resized
-#lines
-#windows
-#plotin symbol
+
+
