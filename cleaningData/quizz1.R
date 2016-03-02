@@ -4,6 +4,10 @@ download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06hid.cs
 myData<-read.table("myData",sep=",",header = TRUE)
 head(myData)              
 
+#53
+#36534720
+#127
+#
 summary(myData)
 colnames(myData)
 
@@ -34,7 +38,6 @@ library(xlsxjars)
   install.packages("xlsx")
 colIndex<-7:15
 rowIndex<-18:23
-libs/rJava.so
 
 dat<-read.xlsx("importedSpread",sheetIndex = 1,colIndex = colIndex,
                rowIndex = rowIndex)
@@ -54,11 +57,88 @@ read.xlsx("importedSpread",1)
 
 fileUrlXml<-"https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Frestaurants.xml"
 download.file(fileUrlXml,dest="importedXmlFile",method="curl")
-library(XML)
-install.packages("XML")
 
+install.packages("XML")
+library(XML)
 doc<-xmlTreeParse("importedXmlFile",useInternal=TRUE)
 
 rootNode<-xmlRoot(doc)
 xmlName(rootNode)
-r<-xpathSApply(rootNode,"//zipCode",xmlValue)
+r<-xpathSApply(rootNode,"//zipcode",xmlValue)
+r[r=="21231"]
+
+
+#comparing performances
+fileUrlCommunities<-"https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06pid.csv"
+download.file(fileUrlCommunities,dest="importedCommunities",method="curl")
+
+library(data.table)
+fileName<-"importedCommunities"
+DT<-fread(fileName)
+names(myCommunities)
+
+
+start.time <- Sys.time()
+mean(DT$pwgtp15,by=DT$SEX)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken # 0.001831293 
+           # 0.002776146
+
+
+start.time <- Sys.time()
+mean(DT$pwgtp15,by=DT$SEX)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+
+
+start.time <- Sys.time()
+class(DT$x)
+DT$SEX
+DTBIS<-DT[ ,c("pwgtp15","SEX")]
+rowMeans(DTBIS)[DTBIS$SEX==1];
+rowMeans(DT)[DT$SEX==2]
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+
+start.time <- Sys.time()
+sapply(split(DT$pwgtp15,DT$SEX),mean)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken #0.002981424 
+
+
+start.time <- Sys.time()
+tapply(DT$pwgtp15,DT$SEX,mean)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken #0.002981424 
+
+start.time <- Sys.time()
+mean(DT[DT$SEX==1,]$pwgtp15); mean(DT[DT$SEX==2,]$pwgtp15)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken #0.034446 secs
+
+start.time <- Sys.time()
+mean(DT[DT$SEX==1,]$pwgtp15); mean(DT[DT$SEX==2,]$pwgtp15)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken #0.003111124 
+
+system.time(tapply(DT$pwgtp15,DT$SEX,mean))
+system.time(mean(DT$pwgtp15,by=DT$SEX))
+
+system.time(DT[,mean(pwgtp15),by=SEX])
+##sapply(split(DT$pwgtp15,DT$SEX),mean)  Pas sur 
+
+#mean(DT$pwgtp15,by=DT$SEX)
+#rowMeans(DT)[DT$SEX==1]; rowMeans(DT)[DT$SEX==2]
+#spply ne marche pas
+#DT[,mean(pwgtp15),by=SEX]
+#0,0004910
+
+
+
