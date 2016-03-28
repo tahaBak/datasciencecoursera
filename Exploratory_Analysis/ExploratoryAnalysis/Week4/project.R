@@ -115,3 +115,8 @@ dates<-strtoi(names(sommelosAngelesData))
 plot(dates,log10(sommelosAngelesData) , type="o" ,ylab="total sum of PM2.5 (Log10 Scale) in los Angeles" , xlab = "years" , col="blue")
 title(main="PM2.5 - motor of Vehicles in los Angeles", col.main="gray", font.main=4)
 nrow(losAngelesData)
+
+
+Sys.which("pdflatex")
+library(knitr)
+install.packages("pdflatex")
