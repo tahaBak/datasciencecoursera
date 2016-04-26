@@ -1,0 +1,187 @@
+---
+title: "Some Analysis on MTCARS dataSet"
+output: pdf_document
+---
+
+#Executive summary
+
+In this document, we are going to study and to analyze the possible relation between the transmission type of a car and its miles per gallon. In our study, we will perform the following steps :\newline
+1. loading data and getting a preview\newline
+2. exploring data\newline
+3. fitting a regressive model\newline
+4. checking if our model is robust when adding new variables.\newline
+5. trying to conclude based on the results of our tests.\newline
+
+#Preview
+
+The data set we are going to study is "mtcars".
+
+```{r} 
+data("mtcars")
+head(mtcars,2)
+```
+
+#Exploratory Analysis
+let's divide and compare data into two groups of cars by the type of transmission: "auto" and "manuel" transmission.
+
+```{r, echo=FALSE ,fig.width=12}
+part1<-subset(mtcars,am==0)
+part2<-subset(mtcars,am==1)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+library(lattice)
+
+x1<-ggplot(aes(y = mpg, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x2<-ggplot(aes(y = cyl, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x3<-ggplot(aes(y = disp, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x4<-ggplot(aes(y = hp, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x5<-ggplot(aes(y = drat, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x6<-ggplot(aes(y = wt, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x7<-ggplot(aes(y = qsec, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x8<-ggplot(aes(y = gear, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x9<-ggplot(aes(y = carb, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+
+grid.arrange(x1, x2, x3, x4,x5,x6,x7,x8,x9, ncol=5)
+
+```
+
+We can see that mpg are differents in the subgroups of transmission mode.
+However,we can see also that generally the two groups don't have the same characteristics : This means that we have to be careful before stating that only type transmission affects the mpg -> there might other factors that cause the mpg changes.
+
+#Inference  
+
+Let's check if subgrouping by type of transmission creates samples with different means :
+
+```{r, echo=TRUE ,fig.width=10}
+ks.test(mtcars[mtcars$am==1,]$mpg,mtcars[mtcars$am==0,]$mpg,"pgamma")
+```
+
+with a p-value of 0.003911 , we are pretty sure that the two subgroups have different means and we can infer it. 
+
+# Fitting a model : mpg Vs am
+We know that mpg is positive and isn't always an integer. Naturally, we can't think of using the Gamma model.
+Lets compare the residuals of a normal(classical)linear model with a generalised linear model using a gamma family.
+
+```{r, echo=FALSE ,fig.width=10, fig.height=2}
+mdlN<-lm(mpg~factor(am)-1,data=mtcars)
+mdlG<-glm(mpg~factor(am)-1,data=mtcars,family=Gamma)
+
+residG<-resid(mdlG)
+residN<-resid(mdlN)
+indexI<-c(rep("Normal Model",length(resid((mdlG)))),rep("Gamma Model",length(resid((mdlG)))))
+
+residValues<-c(residN,residG)
+
+df<-data.frame(residValues,indexI)
+ggplot(aes(y = residValues, x = factor(indexI),fill=factor(indexI)), data = df) + geom_boxplot()+ theme_bw()
+```
+
+Gamma model seems to fit greatly the data. 
+
+### What if .. ? other variables might explain the difference 
+
+Let's take a look at the coefficients of our gamma model :
+
+```{r, echo=FALSE ,fig.width=10}
+mdlG$coefficients
+```
+
+Let's see what happens if we add the variable weight :
+
+```{r, echo=FALSE ,fig.width=10}
+mdlG2<-glm(mpg~factor(am)+wt -1,data=mtcars,family=Gamma)
+mdlG2$coefficients
+```
+
+now let's add weight and cylinders too :
+```{r, echo=FALSE ,fig.width=10}
+mdlG3<-glm(mpg~factor(am)+wt + cyl -1,data=mtcars,family=Gamma)
+mdlG3$coefficients
+
+```
+Yes , we can see that including "cyl" and "wt"" has changed radically the coefficients of the factors of transmission mod.
+
+Let's compare the residuals of the three models
+
+```{r, echo=FALSE ,fig.width=10}
+residG1<-resid(mdlG)
+residG2<-resid(mdlG2)
+residG3<-resid(mdlG3)
+numberParams<-c(rep("Gamma 1 param",length(resid((mdlG)))),
+           rep("Gamma 2 params",length(resid((mdlG2)))),
+           rep("Gamma 3 params",length(resid((mdlG3)))))
+
+residualValues<-c(residG1,residG2,residG3)
+
+df1<-data.frame(residualValues,numberParams)
+ggplot(aes(y = residualValues, x = factor(numberParams),fill=factor(numberParams)), data = df1) + geom_boxplot()+ theme_bw()
+
+sums<-c(sum(residG1^2),sum(residG2^2),sum(residG3^2))
+sums
+```
+
+as we can see, introducing the new variables "cyl" and "wt" has reduced the residuals and improved the quality of our model.
+
+let's compare the three models using anova :
+```{r, echo=FALSE ,fig.width=10}
+anova(mdlG,mdlG2,mdlG3,test="Chisq")
+```
+
+Anova confirms that the additional variables bring information.
+
+
+# Conclusion
+The analysis above show that we have no evidence that the transmission mode is responsable of mpg value. To make a more valuable analysis , It might be better to have data that compares cars that differ only in mode of transmission and are similar in other characterisics(than mpg and am).
+
+
+#Appendix
+1) To produce the exploratory figures ,  i used the following code:
+```{r ,fig.width=12, fig.lp="hello world"}
+part1<-subset(mtcars,am==0)
+part2<-subset(mtcars,am==1)
+# please uncomment the four following lines
+#library(ggplot2)
+#library(gridExtra)
+#library(grid)
+#library(lattice)
+
+x1<-ggplot(aes(y = mpg, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x2<-ggplot(aes(y = cyl, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x3<-ggplot(aes(y = disp, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x4<-ggplot(aes(y = hp, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x5<-ggplot(aes(y = drat, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x6<-ggplot(aes(y = wt, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x7<-ggplot(aes(y = qsec, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x8<-ggplot(aes(y = gear, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+x9<-ggplot(aes(y = carb, x = factor(am),fill=factor(am)), data = mtcars) + geom_boxplot()+ theme_bw()
+ # please , uncomment the following line :
+#grid.arrange(x1, x2, x3, x4,x5,x6,x7,x8,x9, ncol=5)
+
+```
+2)To fit regressive models , i used the following code :
+```{r, fig.width=10, fig.height=2}
+mdlN<-lm(mpg~factor(am)-1,data=mtcars)
+mdlG<-glm(mpg~factor(am)-1,data=mtcars,family=Gamma)
+
+residG<-resid(mdlG)
+residN<-resid(mdlN)
+indexI<-c(rep("Normal Model",length(resid((mdlG)))),rep("Gamma Model",length(resid((mdlG)))))
+
+residValues<-c(residN,residG)
+
+df<-data.frame(residValues,indexI)
+# please , uncomment the following lines
+#ggplot(aes(y = residValues, x = factor(indexI),fill=factor(indexI)), data = df) + geom_boxplot()+ theme_bw()
+```
+3) To add new variables into model and use anova , i used the following code :
+```{r, fig.width=10, fig.height=2}
+
+mdlG2<-glm(mpg~factor(am)+wt -1,data=mtcars,family=Gamma)
+mdlG3<-glm(mpg~factor(am)+wt + cyl -1,data=mtcars,family=Gamma)
+# please ,  uncomment the following lines
+#mdlG$coefficients
+#mdlG2$coefficients
+#mdlG3$coefficients
+#anova(mdlG,mdlG2,mdlG3,test="Chisq")
+```

@@ -1,0 +1,104 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+## Loading and preprocessing the data
+```{r simulate_data}
+library(dplyr)
+par(mfrow=c(1,1))
+myData<-read.csv("activity.csv")
+head(myData)
+
+```
+## What is total number of steps taken per day?
+```{r echo=TRUE}
+res<-aggregate(myData$steps, by=list(myData$date), sum , na.rm=TRUE, na.action=NULL )
+names(res)<-c("date","total.number.steps")
+print(head(res))
+
+```
+
+#### Making a histogram of the total number of steps taken each day
+```{r echo=TRUE}
+clr<-c("blue","green","pink","red","gray")
+hist(res$total.number.steps,main="histogram of total steps (deleting  NA Values)",xlab="total steps in a day",col=clr)
+```
+
+## Calculate and report the mean and median of the total number of steps taken per day
+
+```{r echo=TRUE}
+resMean<-aggregate(myData$steps, by=list(myData$date), function(x) mean(x, na.rm=TRUE)  )
+resMean[is.na(resMean$x),"x"]<-0
+names(resMean)<-c("date","mean.number.steps")
+head(resMean)
+
+resMedian<-aggregate(myData$steps, by=list(myData$date), median ,na.rm=TRUE)
+resMedian[is.na(resMedian$x),"x"]<-0
+names(resMedian)<-c("date","median.number.steps")
+head(resMedian)
+
+```
+
+## What is the average daily activity pattern?
+```{r echo=TRUE}
+
+avgSteps<-aggregate(myData$steps, by=list(myData$interval), mean ,na.rm=TRUE)  
+names(avgSteps)<-c("interval","average.steps")
+plot(x=avgSteps$interval, y=avgSteps$average.steps,type="l" ,xlab="intervals",ylab="average steps",col="blue")
+
+```
+
+## the interval where number of steps are maximum 
+
+```{r echo=TRUE}
+result<-subset(avgSteps,average.steps==max(avgSteps$average.steps)) 
+print(result)
+```
+###### as expected it's at 8'Oclock between 8:35 and 8:40 -> time to go  work 
+## Imputing missing values
+
+##### number of rows containing NA values
+```{r echo=TRUE}
+numberValues<-nrow(myData)-nrow(na.omit(myData))
+print(numberValues)
+```
+
+##### let's replace each na by average by interval
+```{r echo=TRUE}
+names(avgSteps)<-c("interval","altSteps")
+myDataBis<-inner_join(myData,avgSteps)
+myDataBis[is.na(myDataBis$steps),"steps"]<-myDataBis[is.na(myDataBis$steps),"altSteps"]
+head(myDataBis)
+
+```
+
+##### let's plot again the histogram of part using the modified na values
+```{r echo=TRUE}
+avgStepsBis<-aggregate(myDataBis$steps, by=list(myDataBis$date), sum ,na.rm=TRUE)  
+hist(avgStepsBis$x,main="histogram of total steps by NA using averages",xlab="total steps in a day",col=clr)
+```
+
+
+## Are there differences in activity patterns between weekdays and weekends?
+```{r echo=TRUE}
+myDataBis$dateFormatted<-as.Date(myDataBis$date, format="%Y-%m-%d")
+myDataBis$weeks<-weekdays(myDataBis$dateFormatted, abbr = TRUE)
+
+myDataWeekEnd<-myDataBis[myDataBis$weeks %in%c("sam.","dim."),]
+myDataWeekIn<-myDataBis[myDataBis$weeks %in%c("lun.","mar.","mer.","jeu.","ven."),]
+
+par(mfrow=c(1,2))
+resMeanWeekEnd<-aggregate(myDataWeekEnd$steps, by=list(myDataWeekEnd$interval), function(x) mean(x, na.rm=TRUE)  )
+plot(x=resMeanWeekEnd$Group.1, y=resMeanWeekEnd$x,type="l" ,main="weekend steps",xlab="intervals",ylab="average steps",col="blue")
+
+resMeanWeekIn<-aggregate(myDataWeekIn$steps, by=list(myDataWeekIn$interval), function(x) mean(x, na.rm=TRUE)  )
+plot(x=resMeanWeekIn$Group.1, y=resMeanWeekIn$x,type="l",main="weekdays steps" ,xlab="intervals",ylab="average steps",col="blue")
+```
+
+##### We can see clearly that we have more activity in the day during  weekend than in weekdays (may be the subjects are sitting at work during weekdays) 
+#####
+
+
