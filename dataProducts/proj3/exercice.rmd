@@ -1,0 +1,17 @@
+---
+title: 'Peer-graded Assignment: R Markdown Presentation & Plotly'
+author: "Taha_Bakhouch"
+date: "24 octobre 2016"
+output: html_document
+---
+
+# ploting airquality data set
+
+### In the following plot, we see the Mean ozone in parts per billion VERSUS the month using airquality dataset 
+
+```{r,echo=FALSE, results="hide", message=FALSE, warning=FALSE}
+library(plotly)
+```
+```{r,echo=FALSE, message=FALSE, warning=FALSE}
+plot_ly(data=airquality,x=~Ozone,y=~Month,mode="markers")
+```

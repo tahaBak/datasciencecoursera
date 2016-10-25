@@ -1,0 +1,18 @@
+---
+title: "Peer-graded Assignment: R Markdown and Leaflet"
+author: "Taha_Bakhouch"
+date: "23 octobre 2016"
+output: html_document
+---
+
+#This map displays world main cities.
+## reading the data then marking them on the map.
+```{r, echo=FALSE}
+library("leaflet")
+myData<-read.csv(file = "country-capitals.csv",sep=",")
+colnames(myData)[[3]]<-"lat"
+colnames(myData)[[4]]<-"lng"
+myData %>%leaflet() %>% addTiles() %>% addMarkers() 
+
+    
+```
