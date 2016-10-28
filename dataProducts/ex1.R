@@ -36,4 +36,17 @@ write.csv(file="mtcar/mtcars.csv",myset)
 install.packages("leaflet")
 
 
+##debugging
+library(caret)
+Data<<-read.csv("mtcar/mtcars.csv")
+colnames(Data)
+met<-"lm"
+nrow(Data)
+myModel<-train(x=Data[,c("hp","drat")],y=Data[,"wt"],method = "lm")
+resultPredict<-predict(myModel,Data[,c("drat","hp")])  
+
+
+print(myModel)
+
+
 
