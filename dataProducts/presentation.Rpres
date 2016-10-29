@@ -1,0 +1,48 @@
+Shiny Project Presentation
+========================================================
+author: Taha Bakhouch
+date: 28/10/2016
+
+Prediction UI
+========================================================
+**Importing Data** 
+
+By importing a csv file, the following the coding code gets executed :
+```{r}
+dataTrain<-read.csv("mtcar/mtcars.csv") ##assuming we import the mtcars that contains the mtcars dataset
+colsNames<-colnames(dataTrain)
+```
+
+Prediction UI
+========================================================
+**Exploring Data** 
+the Explore View allows exloring data using histograms and barplots.
+```{r}
+hist(dataTrain$wt)
+```
+
+Prediction UI
+========================================================
+**Building Model Data**
+By the selecting feature && the model && the predicted variable, we can build a model using the button "Go Modeling"
+```{r}
+##assuming we selected ("hp","drat") as predicators ; a linear model 
+##and the predictable variable is "wt""
+library(caret)
+myModel<-train(x=dataTrain[,c("hp","drat")],
+                y=dataTrain[,c("wt")],method="lm")
+myModel
+```
+
+Prediction UI
+========================================================
+**Predicting Values**
+To use the built model, you just have to import csv file containing the test data
+
+```{r}
+## lets use the same training data for testing 
+resultPredict<-predict(myModel,dataTrain[,c("hp","drat")])
+unlist(resultPredict)
+
+```
+
